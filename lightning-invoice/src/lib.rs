@@ -1931,10 +1931,15 @@ mod test {
 		assert_eq!(invoice.recover_payee_pub_key(), Ok(crate::PayeePubKey(public_key)));
 
 		let (raw_invoice, _, _) = invoice.into_parts();
-		let new_signed = raw_invoice
+		let mut new_signed = raw_invoice
 			.sign::<_, ()>(|hash| Ok(Secp256k1::new().sign_ecdsa_recoverable(hash, &private_key)))
 			.unwrap();
 
+		assert!(new_signed.check_signature());
+		eprintln!("timestamp: {:?}", new_signed.data.timestamp);
+		// change timestamp from 1496314658 to 0
+		new_signed.raw_invoice.data.timestamp = PositiveTimestamp::from_unix_timestamp(0).unwrap();
+		eprintln!("timestamp: {:?}", new_signed.data.timestamp);
 		assert!(new_signed.check_signature());
 	}
 
