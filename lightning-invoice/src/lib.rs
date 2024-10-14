@@ -921,8 +921,7 @@ impl SignedRawBolt11Invoice {
 		let pub_key =
 			included_pub_key.or(recovered_pub_key.as_ref()).expect("One is always present");
 
-		let hash = Message::from_digest(self.hash);
-
+		let hash = Message::from_digest(self.raw_invoice.signable_hash());
 		let secp_context = Secp256k1::new();
 		let verification_result =
 			secp_context.verify_ecdsa(&hash, &self.signature.to_standard(), pub_key);
@@ -1940,7 +1939,7 @@ mod test {
 		// change timestamp from 1496314658 to 0
 		new_signed.raw_invoice.data.timestamp = PositiveTimestamp::from_unix_timestamp(0).unwrap();
 		eprintln!("timestamp: {:?}", new_signed.data.timestamp);
-		assert!(new_signed.check_signature());
+		assert!(!new_signed.check_signature());
 	}
 
 	#[test]
